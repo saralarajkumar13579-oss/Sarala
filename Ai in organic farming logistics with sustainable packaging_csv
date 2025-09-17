@@ -1,0 +1,21 @@
+Crop,Quantity_kg,Packaging_Type,Packaging_Sustainability_Score,Distance_km,Transport_Method,Estimated_CO2_kg,Season
+Tomatoes,500,Biodegradable Plastic,8.5,120,Electric Van,12.5,Summer
+Carrots,300,Recycled Cardboard,9.2,80,Bicycle,0.5,Spring
+Lettuce,200,Compostable Film,9.0,60,Electric Van,6.2,Summer
+Potatoes,1000,Jute Bag,7.8,200,Diesel Truck,48.0,Autumn
+Spinach,150,Recycled Cardboard,9.1,40,Bicycle,0.4,Spring
+Cucumbers,250,Biodegradable Plastic,8.7,100,Electric Van,10.0,Summer
+Onions,800,Jute Bag,7.5,180,Diesel Truck,42.0,Autumn
+Peppers,400,Compostable Film,9.3,130,Electric Van,13.8,Summer
+Zucchini,350,Recycled Cardboard,9.0,70,Hybrid Truck,9.0,Spring
+Kale,220,Biodegradable Plastic,8.6,50,Bicycle,0.3,Winter
+Beets,600,Jute Bag,7.9,150,Hybrid Truck,18.2,Autumn
+Broccoli,270,Compostable Film,9.4,90,Electric Van,8.1,Winter
+Cabbage,750,Recycled Cardboard,9.0,170,Diesel Truck,36.5,Autumn
+Radishes,180,Biodegradable Plastic,8.3,45,Bicycle,0.2,Spring
+Pumpkin,900,Jute Bag,7.2,250,Diesel Truck,60.0,Autumn
+Celery,300,Compostable Film,9.5,95,Hybrid Truck,11.0,Spring
+Cauliflower,400,Recycled Cardboard,9.1,110,Electric Van,11.5,Winter
+Garlic,100,Biodegradable Plastic,8.4,20,Bicycle,0.1,Spring
+Sweet Corn,650,Jute Bag,7.7,190,Hybrid Truck,20.0,Summer
+Leeks,500,Recycled Cardboard,9.0,160,Electric Van,15.2,Winter
