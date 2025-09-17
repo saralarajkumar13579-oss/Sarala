@@ -1,0 +1,135 @@
+import pandas as pd
+from io import StringIO
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error, r2_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Setup visualization style
+sns.set(style="whitegrid")
+%matplotlib inline
+
+# Data (same 20+ rows as before, truncated here)
+data = """
+Crop,Quantity_kg,Packaging_Type,Packaging_Sustainability_Score,Distance_km,Transport_Method,Estimated_CO2_kg,Season
+Tomatoes,500,Biodegradable Plastic,8.5,120,Electric Van,12.5,Summer
+Carrots,300,Recycled Cardboard,9.2,80,Bicycle,0.5,Spring
+Lettuce,200,Compostable Film,9.0,60,Electric Van,6.2,Summer
+Potatoes,1000,Jute Bag,7.8,200,Diesel Truck,48.0,Autumn
+Spinach,150,Recycled Cardboard,9.1,40,Bicycle,0.4,Spring
+Cucumbers,250,Biodegradable Plastic,8.7,100,Electric Van,10.0,Summer
+Onions,800,Jute Bag,7.5,180,Diesel Truck,42.0,Autumn
+Peppers,400,Compostable Film,9.3,130,Electric Van,13.8,Summer
+Zucchini,350,Recycled Cardboard,9.0,70,Hybrid Truck,9.0,Spring
+Kale,220,Biodegradable Plastic,8.6,50,Bicycle,0.3,Winter
+Beets,600,Jute Bag,7.9,150,Hybrid Truck,18.2,Autumn
+Broccoli,270,Compostable Film,9.4,90,Electric Van,8.1,Winter
+Cabbage,750,Recycled Cardboard,9.0,170,Diesel Truck,36.5,Autumn
+Radishes,180,Biodegradable Plastic,8.3,45,Bicycle,0.2,Spring
+Pumpkin,900,Jute Bag,7.2,250,Diesel Truck,60.0,Autumn
+Celery,300,Compostable Film,9.5,95,Hybrid Truck,11.0,Spring
+Cauliflower,400,Recycled Cardboard,9.1,110,Electric Van,11.5,Winter
+Garlic,100,Biodegradable Plastic,8.4,20,Bicycle,0.1,Spring
+Sweet Corn,650,Jute Bag,7.7,190,Hybrid Truck,20.0,Summer
+Leeks,500,Recycled Cardboard,9.0,160,Electric Van,15.2,Winter
+"""
+
+# Load dataset
+df = pd.read_csv(StringIO(data))
+
+# Features and target
+X = df.drop(columns=['Estimated_CO2_kg'])
+y = df['Estimated_CO2_kg']
+
+numeric_features = ['Quantity_kg', 'Packaging_Sustainability_Score', 'Distance_km']
+categorical_features = ['Crop', 'Packaging_Type', 'Transport_Method', 'Season']
+
+# Preprocessing pipeline
+numeric_transformer = StandardScaler()
+categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+
+preprocessor = ColumnTransformer([
+    ('num', numeric_transformer, numeric_features),
+    ('cat', categorical_transformer, categorical_features)
+])
+
+model = Pipeline([
+    ('preprocessor', preprocessor),
+    ('regressor', RandomForestRegressor(n_estimators=100, random_state=42))
+])
+
+# Train/test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train model
+model.fit(X_train, y_train)
+
+# Predict
+y_pred = model.predict(X_test)
+
+# Evaluation
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print(f"MAE: {mae:.2f} kg CO2, R2: {r2:.2f}")
+
+# Results table
+results = X_test.copy()
+results['Actual_CO2'] = y_test.values
+results['Predicted_CO2'] = y_pred.round(2)
+
+print("\nSample Predictions:")
+print(results.head())
+
+# ========== CHARTS ==========
+
+# 1) Actual vs Predicted scatter plot
+plt.figure(figsize=(7,5))
+sns.scatterplot(x=y_test, y=y_pred)
+plt.plot([y.min(), y.max()], [y.min(), y.max()], 'r--')  # Diagonal line
+plt.xlabel("Actual CO2 (kg)")
+plt.ylabel("Predicted CO2 (kg)")
+plt.title("Actual vs Predicted CO2 Emissions")
+plt.tight_layout()
+plt.show()
+
+# 2) Packaging Sustainability Score Distribution
+plt.figure(figsize=(7,5))
+sns.boxplot(x='Packaging_Type', y='Packaging_Sustainability_Score', data=df, palette='Set2')
+plt.title("Packaging Sustainability Score by Type")
+plt.ylabel("Sustainability Score")
+plt.xlabel("Packaging Type")
+plt.tight_layout()
+plt.show()
+
+# 3) Average CO2 Emissions by Transport Method
+avg_co2_transport = df.groupby('Transport_Method')['Estimated_CO2_kg'].mean().sort_values()
+plt.figure(figsize=(7,5))
+sns.barplot(x=avg_co2_transport.index, y=avg_co2_transport.values, palette='coolwarm')
+plt.title("Average CO2 Emissions by Transport Method")
+plt.ylabel("Avg CO2 (kg)")
+plt.xlabel("Transport Method")
+plt.xticks(rotation=20)
+plt.tight_layout()
+plt.show()
+
+# 4) Feature Importance from Random Forest
+# Extract feature names after encoding
+ohe = model.named_steps['preprocessor'].named_transformers_['cat']
+ohe_features = ohe.get_feature_names_out(categorical_features)
+all_features = numeric_features + list(ohe_features)
+
+importances = model.named_steps['regressor'].feature_importances_
+feat_imp = pd.Series(importances, index=all_features).sort_values(ascending=False)
+
+plt.figure(figsize=(10,6))
+sns.barplot(x=feat_imp.values, y=feat_imp.index, palette='viridis')
+plt.title("Feature Importances from Random Forest Model")
+plt.xlabel("Importance")
+plt.ylabel("Feature")
+plt.tight_layout()
+plt.show()
